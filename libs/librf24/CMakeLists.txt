@@ -1,0 +1,4 @@
+SET(RF24_SRC_LIST RF24.cpp gpio.cpp spi.cpp compatibility.c)
+
+ADD_LIBRARY(rf24 SHARED ${RF24_SRC_LIST} )
+TARGET_LINK_LIBRARIES(rf24)

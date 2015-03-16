@@ -1,0 +1,2 @@
+/usr/bin/ar cr libopenp2p-stream.a  CMakeFiles/openp2p-stream.dir/BinaryStream.cpp.o CMakeFiles/openp2p-stream.dir/StringStream.cpp.o
+/usr/bin/ranlib libopenp2p-stream.a

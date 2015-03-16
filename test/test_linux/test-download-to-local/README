@@ -1,0 +1,18 @@
+1. Execute build_and_tar.sh to build and make tarball.
+
+2. cd build (then scp etc.) and tar -jxvf streaming_pb_downloader.tar.bz2 -C /
+
+3. We need to install libboost-filesystem and python-mysqldb in the hdvr server.
+
+4. Execute /usr/local/id/streaming_pb_downloader/current/scripts/generate_downloader_ini.py
+   Execute /usr/local/id/streaming_pb_downloader/current/scripts/generate_event_name_list.py
+
+5. Modify /usr/local/id/streaming_pb_downloader/current/configs/downloader.ini and /usr/local/id/streaming_pb_downloader/current/configs/event_name_list.txt
+
+6. excute ldconfig
+
+7. We need to add following configuration into the /etc/crontab
+*/5 * * * * root /usr/bin/python /usr/local/id/streaming_pb_downloader/current/scripts/download_service_for_archive.py > /dev/null
+
+8. /etc/init.d/cron reload
+

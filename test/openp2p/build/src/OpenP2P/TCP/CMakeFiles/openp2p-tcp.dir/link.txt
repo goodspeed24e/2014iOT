@@ -1,0 +1,2 @@
+/usr/bin/ar cr libopenp2p-tcp.a  CMakeFiles/openp2p-tcp.dir/Acceptor.cpp.o CMakeFiles/openp2p-tcp.dir/Resolver.cpp.o CMakeFiles/openp2p-tcp.dir/Stream.cpp.o
+/usr/bin/ranlib libopenp2p-tcp.a

@@ -1,0 +1,1 @@
+*/5 * * * * root /usr/bin/python /usr/local/id/streaming_pb_downloader/current/scripts/download_service_for_archive.py > /dev/null

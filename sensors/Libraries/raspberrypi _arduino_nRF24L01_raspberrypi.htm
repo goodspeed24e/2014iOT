@@ -1,0 +1,739 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0066)http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3053467.html -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园</title>
+<link type="text/css" rel="stylesheet" href="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/blog-common.css">
+<link id="MainCss" type="text/css" rel="stylesheet" href="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/style.css">
+<link title="RSS" type="application/rss+xml" rel="alternate" href="http://www.cnblogs.com/hangxin1940/rss">
+<link title="RSD" type="application/rsd+xml" rel="EditURI" href="http://www.cnblogs.com/hangxin1940/rsd.xml">
+<link type="application/wlwmanifest+xml" rel="wlwmanifest" href="http://www.cnblogs.com/hangxin1940/wlwmanifest.xml">
+<script async="" type="text/javascript" src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/gpt.js"></script><script src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/jquery.js" type="text/javascript"></script>  
+<script type="text/javascript">var currentBlogApp = 'hangxin1940', cb_enable_mathjax=false;</script>
+<script src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/blog-common.js" type="text/javascript"></script>
+<script async="" type="text/javascript" src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/pubads_impl_32.js"></script><script type="text/javascript" src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/osd.js"></script></head>
+<body>
+<a name="top"></a>
+<!--PageBeginHtml Block Begin-->
+<link rel="stylesheet" media="all" href="http://files.cnblogs.com/hangxin1940/highlight.css">
+<!--PageBeginHtml Block End-->
+
+<div id="header">
+    
+<h1><a id="Header1_HeaderTitle" class="headermaintitle" href="http://www.cnblogs.com/hangxin1940/">不可一日无烟卷</a></h1>
+<p id="tagline">从这里回归  http://xgeek.me/</p>
+</div>
+<div id="wrapper">
+<div id="main">
+    
+
+	<div class="post">
+		<h2>
+			<a id="cb_post_title_url" href="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园.htm">raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端</a>
+		</h2>
+		<div class="postText"><div id="cnblogs_post_body"><p>nRF24L01+ 通过gpio与树梅派链接，按着网上能找到的所有方法基本上都不顺利，从Python方案到c方案都不行，尝试了很长时间，终于成功，基本上，每个人都会碰到各种各样的问题。</p>
+
+<p>arduino 接收端代码：<a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3048315.html">http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3048315.html</a> </p>
+
+<h2>修改系统配置</h2>
+
+<pre><code>$ sudo nano /etc/modprobe.d/raspi-blacklist.conf
+</code></pre>
+
+<p>都注释掉，修改为:</p>
+
+<pre><code># blacklist spi and i2c by default (many users don't need them)
+
+#blacklist spi-bcm2708
+#blacklist i2c-bcm2708
+</code></pre>
+
+<p>修改加载模块</p>
+
+<pre><code>$ sudo nano /etc/modules
+</code></pre>
+
+<p>改为:</p>
+
+<pre><code>snd-bcm2835
+i2c-dev
+spidev
+</code></pre>
+
+<p>主要是增加 <code>spidev</code></p>
+
+<p>重启之后，<code>/dev/</code>中会多出两个设备 <code>spidev0.0</code> 与 <code>spidev0.1</code>， 没有出现的话请google排错。</p>
+
+<h2>下载源码</h2>
+
+<p><a href="https://github.com/gnulnulf/RF24">https://github.com/gnulnulf/RF24</a></p>
+
+<p>打包下载到树梅派</p>
+
+<h2>编译rf24库</h2>
+
+<p>解压下载好的源码，进入目录<code>RF24-master/librf24-rpi/librf24</code></p>
+
+<p>编译</p>
+
+<pre><code>$ make
+</code></pre>
+
+<p>如果出现缺少某些编译工具的提示，google搜搜然后apt安装就是了
+安装</p>
+
+<pre><code>$ sudo make install
+</code></pre>
+
+<p>编译源码</p>
+
+<pre><code>$ make
+</code></pre>
+
+<p>安装</p>
+
+<pre><code>$ sudo make install
+</code></pre>
+
+<h2>连接 nRF24L01+ 模块</h2>
+
+<p><img src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/o_rf24_GPIOs.png" alt="rf24" title="rf24"></p>
+
+<pre><code>rf24        rasp
+3.3v        3.3v (不能使用5v)
+GND         GND
+CE          GPIO 18 (右排往下第六个)
+CSN         GPIO 8 (右排往下倒数第二个)
+SCK         GPIO 11 (左排往下倒数第二个)  
+MOSI        GPIO 10 (左排往下倒数第四个)
+MISO        GPIO 9  (左排往下倒数第三个)
+</code></pre>
+
+<h2>编写发送端程序</h2>
+
+<p>源码中已经有丰富的示例程序，我们只需要改改源码就可以跑通</p>
+
+<p>进入<code>librf24-rpi/librf24/examples</code></p>
+
+<p>更改 <code>pingtest.cpp</code> 代码为:</p>
+
+<pre><code>/**
+* Example RF Radio Ping Pair
+*
+* This is an example of how to use the RF24 class.  Write this sketch to two different nodes,
+* connect the role_pin to ground on one.  The ping node sends the current time to the pong node,
+* which responds by sending the value back.  The ping node can then see how long the whole cycle
+* took.
+*/
+
+#include &lt;cstdlib&gt;
+#include &lt;iostream&gt;
+
+#include "../RF24.h"
+
+/*
+    连接方法
+
+    rf24        rasp
+    3.3v        3.3v (不能使用5v)
+    GND         GND
+    CE          GPIO 18 (右排往下第六个)
+    CSN         GPIO 8 (右排往下倒数第二个)
+    SCK         GPIO 11 (左排往下倒数第二个)  
+    MOSI        GPIO 10 (左排往下倒数第四个)
+    MISO        GPIO 9  (左排往下倒数第三个)
+
+*/
+
+//
+// 硬件配置
+// spi设备、CSN速率、CSN引脚 GPIO 8
+RF24 radio("/dev/spidev0.0",8000000 , 8); 
+
+// 设置数据通道地址
+const uint64_t pipes[2] = { 0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
+
+// 配置rf24
+void setup(void) {
+
+    printf("\n\rRF24/examples/pingpair/\n\r");
+    printf("ROLE: Ping out\n\r");
+
+    radio.begin();
+
+    // 开启动态有效信息长度
+    radio.enableDynamicPayloads();
+
+    // 设置重传次数以及每次重传的延迟
+    //radio.setRetries(15,15);
+
+    // 设置传输速率
+    radio.setDataRate(RF24_1MBPS);
+
+    // 设置功放级别，有四种级别：
+    // RF24_PA_MIN=-18dBm
+    // RF24_PA_LOW=-12dBm
+    // RF24_PA_MED=-6dBM
+    // RF24_PA_HIGH=0dBm
+    radio.setPALevel(RF24_PA_HIGH);
+
+    // 设置信道(0-127)
+    radio.setChannel(110);
+
+    // 设置crc校验长度
+    // 两种 8位RF24_CRC_8 和 16位RF24_CRC_16
+    radio.setCRCLength(RF24_CRC_16);
+
+    radio.openWritingPipe(pipes[0]);
+    radio.openReadingPipe(1,pipes[1]);
+
+
+    //
+    // 开始监听
+    //
+
+    radio.startListening();
+
+    // 打印配置信息
+    radio.printDetails();
+}
+
+void loop(void) {
+
+    // 首先停止监听
+    radio.stopListening();
+
+    // 获取时间，并发送时间
+    unsigned long time = __millis();
+    printf("Now sending %lu...",time);
+
+    // 是否发送成功
+    bool ok = radio.write( &amp;amp;time, sizeof(unsigned long) );
+
+    if (ok)
+        printf("ok...");
+    else
+        printf("failed.\n\r");
+
+    // 继续监听
+    radio.startListening();
+
+    // 等待对方返回数据，超时时间 250ms
+    unsigned long started_waiting_at = __millis();
+
+    bool timeout = false;
+    while ( !radio.available() &amp;amp;&amp;amp; !timeout ) {
+
+        //稍微延迟一下，等待radio.available()检测有效数据
+        __msleep(5);
+        if (__millis() - started_waiting_at &amp;gt; 200 )
+        timeout = true;
+    }
+
+    // 是否超时
+    if ( timeout ) {
+
+        printf("Failed, response timed out.\n\r");
+
+    } else {
+        // 读取返回信息，并打印出来
+        unsigned long got_time;
+        radio.read( &amp;amp;got_time, sizeof(unsigned long) );
+
+        printf("Got response %lu, round-trip delay: %lu\n\r",got_time,__millis()-got_time);
+    }
+
+    //延迟一会儿
+    sleep(1);
+}
+
+int main(int argc, char** argv) {
+    setup();
+
+    while(1)
+        loop();
+
+    return 0;
+}
+</code></pre>
+
+<p>然后编译:</p>
+
+<pre><code>$ make
+</code></pre>
+
+<p>之后，这几个示例都会编译出来。运行<code>pingtest</code>程序</p>
+
+<pre><code>$ sudo ./pingtest
+</code></pre>
+
+<p>rasp的输出:</p>
+
+<pre><code>RF24/examples/pingpair/
+ROLE: Ping out
+SPI device   = /dev/spidev0.0
+SPI speed    = 8000000
+CE GPIO  = 8
+STATUS       = 0x0e RX_DR=0 TX_DS=0 MAX_RT=0 RX_P_NO=7 TX_FULL=0
+RX_ADDR_P0-1     = 0xf0f0f0f0e1 0xf0f0f0f0d2
+RX_ADDR_P2-5     = 0xe2 0xe3 0xf1 0xf2
+TX_ADDR      = 0xf0f0f0f0e1
+RX_PW_P0-6   = 0x20 0x20 0x20 0x20 0x20 0x20
+EN_AA        = 0x3f
+EN_RXADDR    = 0x3e
+RF_CH        = 0x6e
+RF_SETUP     = 0x04
+CONFIG       = 0x0f
+DYNPD/FEATURE    = 0x3f 0x04
+Data Rate    = 1MBPS
+Model        = nRF24L01+
+CRC Length   = 16 bits
+PA Power     = PA_HIGH
+Now sending 1607486530...failed.
+Got response 1607486430, round-trip delay: 156
+Now sending 1607487589...failed.
+Got response 1607487489, round-trip delay: 158
+Now sending 1607488650...failed.
+</code></pre>
+
+<p>ps: 本人用arduino uno充当接收端时，发送端总是提示发送失败<code>failed</code>，但是，双方通信是没问题的。换成了lilypad就没有这个情况。</p>
+
+<p>上面的是配置信息，如果大部分数据都是ffffff，那么硬件没有配置成功，这样很麻烦，只能求助与google了。</p>
+
+<p>下面的 sending那些东西，是发送给arduino，以及arduino返回的数，arduino会给每个数减去100，并返回。</p>
+
+<p>arduino的输出：</p>
+
+<pre><code>RF24/examples/pingpair/
+ROLE: Pong back
+STATUS       = 0x0e RX_DR=0 TX_DS=0 MAX_RT=0 RX_P_NO=7 TX_FULL=0
+RX_ADDR_P0-1    = 0xf0f0f0f0d2 0xf0f0f0f0e1
+RX_ADDR_P2-5    = 0xc3 0xc4 0xc5 0xc6
+TX_ADDR      = 0xf0f0f0f0d2
+RX_PW_P0-6      = 0x20 0x20 0x00 0x00 0x00 0x00
+EN_AA        = 0x3f
+EN_RXADDR       = 0x03
+RF_CH        = 0x6e
+RF_SETUP        = 0x05
+CONFIG       = 0x0f
+DYNPD/FEATURE   = 0x3f 0x04
+Data Rate    = 1MBPS
+Model        = nRF24L01+
+CRC Length   = 16 bits
+PA Power     = LA_MED
+Got payload 1607938782...Sent response.
+Got payload 1607939839...Sent response.
+Got payload 1607940898...Sent response.
+</code></pre>
+
+<h2>补充</h2>
+
+<p><a href="http://wenku.baidu.com/view/6c779635eefdc8d376ee3256.html">http://wenku.baidu.com/view/6c779635eefdc8d376ee3256.html</a> nRF24L01中文手册</p>
+
+<p><a href="http://maniacbug.github.io/RF24/classRF24.html">http://maniacbug.github.io/RF24/classRF24.html</a> RF24的api手册，适用于rasp和arduino</p>
+
+<p>其他 rf24与rasp和arduino相关的资源:</p>
+
+<p><a href="http://www.raspberrypi.org/phpBB3/viewtopic.php?t=17061">http://www.raspberrypi.org/phpBB3/viewtopic.php?t=17061</a> 官方讨论</p>
+
+<p><a href="https://github.com/maniacbug/RF24">https://github.com/maniacbug/RF24</a>  rf24库</p>
+
+<p><a href="https://github.com/gnulnulf/RF24">https://github.com/gnulnulf/RF24</a> 包含rasp的rf24库</p>
+
+<p><a href="https://bitbucket.org/Amanoo/rf24rp/wiki/Home">https://bitbucket.org/Amanoo/rf24rp/wiki/Home</a> BeagleBone的rf24库移植的rasp库</p>
+
+<p><a href="http://www.e-risingstar.com/wordpress/?p=543">http://www.e-risingstar.com/wordpress/?p=543</a> 另一个rasp与arduino的互通指南，基于上面那个BeagleBone移植过来的库</p>
+
+<p><a href="https://plus.google.com/100198871098258549028/posts/Hn1JpyUWKKo">https://plus.google.com/100198871098258549028/posts/Hn1JpyUWKKo</a> rasp的python rasp库</p>
+
+<p><a href="http://arduino-info.wikispaces.com/Nrf24L01-2.4GHz-HowTo">http://arduino-info.wikispaces.com/Nrf24L01-2.4GHz-HowTo</a> arduino的rf24指南</p>
+
+<p><a href="http://maniacbug.wordpress.com/2011/11/02/getting-started-rf24/">http://maniacbug.wordpress.com/2011/11/02/getting-started-rf24/</a> 另一个arduino的rf24指南</p>
+
+<p></p></div><div id="MySignature"></div>
+<div class="clear"></div>
+<div id="blog_post_info_block">
+<div id="blog_post_info"><div id="BlogPostCategory">分类: <a href="http://www.cnblogs.com/hangxin1940/category/333368.html">Arduino</a>, <a href="http://www.cnblogs.com/hangxin1940/category/466638.html">Geek</a>, <a href="http://www.cnblogs.com/hangxin1940/category/466641.html">Raspberry PI</a></div>
+<div id="EntryTag"></div>
+<div id="green_channel">
+绿色通道：
+<a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(cb_entryId,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+<a id="green_channel_follow" onclick="c_follow();" href="javascript:void(0);">关注我</a>
+<a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a><a id="green_channel_contact" href="http://space.cnblogs.com/msg/send/%e9%bb%91%e6%9a%97%e4%bc%af%e7%88%b5" target="_blank">与我联系</a>
+<a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/icon_weibo_24.png" alt=""></a>
+</div>
+<div id="digg_block">
+<div id="author_profile">
+<div id="author_profile_info" class="author_profile_info">
+<a href="http://home.cnblogs.com/u/hangxin1940/" target="_blank"><img src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/20130815001616.png" class="author_avatar" alt=""></a>
+<div id="author_profile_detail" class="author_profile_info">
+<a href="http://home.cnblogs.com/u/hangxin1940/">黑暗伯爵</a><br>
+<a href="http://home.cnblogs.com/u/hangxin1940/followees">关注 - 1</a><br>
+<a href="http://home.cnblogs.com/u/hangxin1940/followers">粉丝 - 132</a>
+</div>
+</div>
+<div class="clear"></div>
+<div id="author_profile_honor">荣誉：<a href="http://www.cnblogs.com/expert/" target="_blank">推荐博客</a></div>
+<div id="author_profile_follow">
+<a href="javascript:void(0);" onclick="c_follow();return false;">+加关注</a>
+</div>
+</div>
+<div id="div_digg">										
+	<div class="diggit" onclick="votePost(cb_entryId,&#39;Digg&#39;)"> 
+		<span class="diggnum" id="digg_count">1</span>
+	</div>
+	<div class="buryit" onclick="votePost(cb_entryId,&#39;Bury&#39;)"> 
+		<span class="burynum" id="bury_count">0</span>
+	</div>
+	<div class="clear"></div>	
+	<div class="diggword" id="digg_tips">
+    (请您对文章做出评价)
+    </div>	
+</div>
+</div></div>
+<div class="clear"></div>
+<div id="post_next_prev"><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3048315.html" class="p_n_p_prefix">« </a> 上一篇：<a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3048315.html" title="发布于2013-05-01 17:59">raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- arduino为接收端</a><br><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/05/3060510.html" class="p_n_p_prefix">» </a> 下一篇：<a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/05/3060510.html" title="发布于2013-05-05 01:28">为 raspberrypi 开发内核模块</a><br></div>
+</div>
+
+</div>
+		<p class="postfoot">
+			posted on <span id="post-date">2013-05-01 19:41</span> <a href="http://www.cnblogs.com/hangxin1940/">黑暗伯爵</a> 阅读(<span id="post_view_count">1109</span>) 评论(<span id="post_comment_count">2</span>)  <a href="http://www.cnblogs.com/hangxin1940/admin/EditPosts.aspx?postid=3053467" rel="nofollow">编辑</a> <a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3053467.html#" onclick="AddToWz(3053467);return false;">收藏</a>
+		</p>
+	</div>
+	<script type="text/javascript">var allowComments=true,isLogined=false,cb_blogId=34637,cb_entryId=3053467,cb_blogApp=currentBlogApp,cb_blogUserGuid='d730420b-63cf-dd11-9e4d-001cf0cd104b',cb_entryCreatedDate='2013/5/1 19:41:00';loadViewCount(cb_entryId);</script>
+	
+	<a name="!comments"></a><div id="blog-comments-placeholder"><div id="comments_pager_top"></div>
+<a name="comments"></a>
+<div id="comments">
+<h3>评论</h3>
+
+
+	<h4><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3053467.html#2672995" class="layer">#1楼</a><a name="2672995" id="comment_anchor_2672995"></a><span> <span class="comment_date">2013-05-05 14:33</span></span><a id="a_comment_author_2672995" href="http://www.cnblogs.com/coldair/" target="_blank">coldair</a> <a href="http://space.cnblogs.com/msg/send/coldair" title="发送站内短消息" class="sendMsg2This">&nbsp;</a></h4>
+	<p></p><div id="comment_body_2672995" class="blog_comment_body">膜拜一下。<br>不知道有没有兴趣看看树莓派的这个项目<br><a href="https://github.com/pcnate/fm-radio-python" target="_blank">https://github.com/pcnate/fm-radio-python</a><br>，，，做了几天，没有思路，想请教你一下</div><div class="comment_vote"><a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(2672995,&#39;Digg&#39;,this)">支持(0)</a><a href="javascript:void(0);" class="comment_bury" onclick="return voteComment(2672995,&#39;Bury&#39;,this)">反对(0)</a></div><span id="comment_2672995_avatar" style="display:none;">http://pic.cnitblog.com/face/u388911.jpg?id=30233029</span><span class="comment_actions"></span><p></p>
+
+	<h4><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3053467.html#2782948" class="layer">#2楼</a><a name="2782948" id="comment_anchor_2782948"></a><span id="comment-maxId" style="display:none;">2782948</span><span id="comment-maxDate" style="display:none;">2013/9/26 17:09:42</span><span> <span class="comment_date">2013-09-26 17:09</span></span><a id="a_comment_author_2782948" href="http://home.cnblogs.com/u/570647/" target="_blank">freemanhuang</a> <a href="http://space.cnblogs.com/msg/send/freemanhuang" title="发送站内短消息" class="sendMsg2This">&nbsp;</a></h4>
+	<p></p><div id="comment_body_2782948" class="blog_comment_body">你好……我在执行你的程序时，出现 Segmentaion fault 然后就结束程序了！请问是什么原因？谢谢！！</div><div class="comment_vote"><a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(2782948,&#39;Digg&#39;,this)">支持(0)</a><a href="javascript:void(0);" class="comment_bury" onclick="return voteComment(2782948,&#39;Bury&#39;,this)">反对(0)</a></div><span class="comment_actions"></span><p></p>
+
+</div><div id="comments_pager_bottom"></div></div><script type="text/javascript">var commentManager = new blogCommentManager();commentManager.renderComments(0);</script>
+<div id="comment_form" class="commentform">
+<a name="commentform"></a>
+<div id="divCommentShow"></div>
+<div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" id="lnk_RefreshComments" onclick="return RefreshCommentList();">刷新评论</a><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3053467.html#" onclick="return RefreshPage();">刷新页面</a><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01/3053467.html#top">返回顶部</a></div>
+<div id="comment_form_container"><div class="login_tips">注册用户登录后才能发表评论，请 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return login(&#39;commentform&#39;);">登录</a> 或 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return register();">注册</a>，<a href="http://www.cnblogs.com/">访问</a>网站首页。</div></div>
+<div class="ad_text_commentbox" id="ad_text_under_commentbox"><a target="_blank" href="http://q.cnblogs.com/">程序员问答平台，解决您的技术难题</a></div>
+<div id="site_nav_under"><a href="http://www.cnblogs.com/" target="_blank" title="程序员的网上家园">博客园首页</a><a href="http://q.cnblogs.com/" target="_blank" title="程序员问答社区">博问</a><a href="http://news.cnblogs.com/" target="_blank" title="IT新闻">新闻</a><a href="http://home.cnblogs.com/ing/" target="_blank">闪存</a><a href="http://job.cnblogs.com/" target="_blank">程序员招聘</a><a href="http://kb.cnblogs.com/" target="_blank">知识库</a></div>
+<div id="ad_under_post_holder">
+
+<div id="google_ad_c1" class="c_ad_block">
+    <!-- cnblogs_blogpost_C1_sitehome -->
+    <div id="div-gpt-ad-1346480159711-0" style="width:300px; height:250px;">
+    
+    <div id="google_ads_iframe_/1090369/cnblogs_blogpost_C1_sitehome_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/1090369/cnblogs_blogpost_C1_sitehome_0" name="google_ads_iframe_/1090369/cnblogs_blogpost_C1_sitehome_0" width="300" height="250" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" src="javascript:"<html><body style='background:transparent'></body></html>"" style="border: 0px; vertical-align: bottom;"></iframe></div><iframe id="google_ads_iframe_/1090369/cnblogs_blogpost_C1_sitehome_0__hidden__" name="google_ads_iframe_/1090369/cnblogs_blogpost_C1_sitehome_0__hidden__" width="0" height="0" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" src="javascript:"<html><body style='background:transparent'></body></html>"" style="border: 0px; vertical-align: bottom; visibility: hidden; display: none;"></iframe></div>
+</div>
+<div id="blog_news_kb"><div class="itnews c_ad_block"><b>最新IT新闻</b>:<br> ·  <a href="http://news.cnblogs.com/n/200827/" target="_blank">《生化奇兵》工作室宣布散伙</a><br> ·  <a href="http://news.cnblogs.com/n/200826/" target="_blank">自上而下的软件开发和自下而上软件开发</a><br> ·  <a href="http://news.cnblogs.com/n/200825/" target="_blank">程序员，告诉他们被打断的真实代价</a><br> ·  <a href="http://news.cnblogs.com/n/200824/" target="_blank">创业者如何提高学习效率？</a><br> ·  <a href="http://news.cnblogs.com/n/200823/" target="_blank">马斯克思想碰撞戴尔：创业5条建议</a><br>» <a href="http://news.cnblogs.com/" title="IT新闻" target="_blank">更多新闻...</a></div><div class="itnews c_ad_block" id="kb_block"><b>最新知识库文章</b>:<br><div id="kb_recent"> ·  <a href="http://kb.cnblogs.com/page/200528/" target="_blank">关于在线教育和线下教育的六个问题</a><br> ·  <a href="http://kb.cnblogs.com/page/199787/" target="_blank">别错把需求当市场</a><br> ·  <a href="http://kb.cnblogs.com/page/199251/" target="_blank">浏览器中关于事件的那点事儿</a><br> ·  <a href="http://kb.cnblogs.com/page/198974/" target="_blank">全栈工程师就是一棵歪脖子树</a><br> ·  <a href="http://kb.cnblogs.com/page/191744/" target="_blank">Linux上的基础网络设备详解</a><br></div>» <a href="http://kb.cnblogs.com/" target="_blank">更多知识库文章...</a></div></div></div>
+<script type="text/javascript">
+var enableGoogleAd = true;
+var googletag = googletag || {};
+googletag.cmd = googletag.cmd || [];
+fixPostBodyFormat();
+loadAdUnderPost();
+</script>
+<div id="HistoryToday" class="c_ad_block"></div>
+<script type="text/javascript">
+loadBlogSignature();
+LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate);
+GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+</script>
+<script type="text/javascript">
+    $.ajax({ url: 'http://counter.cnblogs.com/blog/post/' + cb_entryId, type: 'get', dataType: 'script', cache: true });
+</script>
+</div>
+    
+</div>
+<div id="rightmenu">
+    
+        
+<h3>公告</h3>
+	<div id="blog-news"><img src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/20130815001616(1).png">
+<p>这里</p><a href="http://xgeek.me/">http://xgeek.me/</a>有一些补遗<br><p>&nbsp;</p>
+<div id="my_weibo"></div><div id="profile_block">昵称：<a href="http://home.cnblogs.com/u/hangxin1940/">黑暗伯爵</a><br>园龄：<a href="http://home.cnblogs.com/u/hangxin1940/" title="入园时间：2008-03-18">5年11个月</a><br>荣誉：<a href="http://www.cnblogs.com/expert/">推荐博客</a><br>粉丝：<a href="http://home.cnblogs.com/u/hangxin1940/followers/">132</a><br>关注：<a href="http://home.cnblogs.com/u/hangxin1940/followees/">1</a><div id="p_b_follow"><a href="javascript:void(0);" onclick="cnblogs.UserManager.FollowBlogger(&#39;d730420b-63cf-dd11-9e4d-001cf0cd104b&#39;)">+加关注</a></div></div></div><script type="text/javascript">loadBlogNews();</script>
+
+        
+<h3>导航</h3>
+<ul>
+			<li><a id="MyLinks1_HomeLink" href="http://www.cnblogs.com/">博客园</a></li>
+			<li><a id="MyLinks1_MyHomeLink" href="http://www.cnblogs.com/hangxin1940/">首页</a></li>
+			<li><a id="MyLinks1_NewPostLink" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/admin/EditPosts.aspx?opt=1">新随笔</a></li>
+			<li><a id="MyLinks1_ContactLink" accesskey="9" rel="nofollow" href="http://space.cnblogs.com/msg/send/%e9%bb%91%e6%9a%97%e4%bc%af%e7%88%b5">联系</a></li>
+			<li><a id="MyLinks1_Syndication" href="http://www.cnblogs.com/hangxin1940/rss">订阅</a><a id="MyLinks1_XMLLink" href="http://www.cnblogs.com/hangxin1940/rss"><img src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/xml.gif" alt="订阅"></a>
+			</li><li><a id="MyLinks1_Admin" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/admin/EditPosts.aspx">管理</a></li>
+</ul>
+        <div id="blog-calendar" style=""><table id="blogCalendar" class="Cal" cellspacing="0" cellpadding="0" title="日历">
+	<tbody><tr><td colspan="7"><table class="CalTitle" cellspacing="0">
+		<tbody><tr><td class="CalNextPrev"><a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2013/04/01&#39;);return false;">&lt;</a></td><td align="center">2013年5月</td><td class="CalNextPrev" align="right"><a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2013/06/01&#39;);return false;">&gt;</a></td></tr>
+	</tbody></table></td></tr><tr><th class="CalDayHeader" align="center" abbr="日" scope="col">日</th><th class="CalDayHeader" align="center" abbr="一" scope="col">一</th><th class="CalDayHeader" align="center" abbr="二" scope="col">二</th><th class="CalDayHeader" align="center" abbr="三" scope="col">三</th><th class="CalDayHeader" align="center" abbr="四" scope="col">四</th><th class="CalDayHeader" align="center" abbr="五" scope="col">五</th><th class="CalDayHeader" align="center" abbr="六" scope="col">六</th></tr><tr><td class="CalOtherMonthDay" align="center">28</td><td class="CalOtherMonthDay" align="center">29</td><td class="CalOtherMonthDay" align="center">30</td><td align="center"><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/01.html"><u>1</u></a></td><td align="center">2</td><td align="center">3</td><td class="CalWeekendDay" align="center">4</td></tr><tr><td class="CalWeekendDay" align="center"><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/05.html"><u>5</u></a></td><td align="center">6</td><td align="center">7</td><td align="center">8</td><td align="center">9</td><td align="center">10</td><td class="CalWeekendDay" align="center">11</td></tr><tr><td class="CalWeekendDay" align="center">12</td><td align="center">13</td><td align="center">14</td><td align="center">15</td><td align="center">16</td><td align="center">17</td><td class="CalWeekendDay" align="center">18</td></tr><tr><td class="CalWeekendDay" align="center">19</td><td align="center">20</td><td align="center">21</td><td align="center">22</td><td align="center">23</td><td align="center">24</td><td class="CalWeekendDay" align="center">25</td></tr><tr><td class="CalWeekendDay" align="center">26</td><td align="center">27</td><td align="center"><a href="http://www.cnblogs.com/hangxin1940/archive/2013/05/28.html"><u>28</u></a></td><td align="center">29</td><td align="center">30</td><td align="center">31</td><td class="CalOtherMonthDay" align="center">1</td></tr><tr><td class="CalOtherMonthDay" align="center">2</td><td class="CalOtherMonthDay" align="center">3</td><td class="CalOtherMonthDay" align="center">4</td><td class="CalOtherMonthDay" align="center">5</td><td class="CalOtherMonthDay" align="center">6</td><td class="CalOtherMonthDay" align="center">7</td><td class="CalOtherMonthDay" align="center">8</td></tr>
+</tbody></table></div><script type="text/javascript">loadBlogDefaultCalendar();</script>
+        
+<h3>统计</h3>
+	<ul>
+		<li>随笔 - 151
+		</li><li>文章 - 1
+		</li><li>评论 - 316
+		</li><li>引用 - 0
+	</li>
+</ul>
+        <div id="blog-sidecolumn">
+
+<div class="mySearch">
+<h3 class="catListTitle">搜索</h3>
+<div id="widget_my_zzk" class="div_my_zzk"><input type="text" id="q" onkeydown="return zzk_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="zzk_go()" type="button" value="找找看" id="btnZzk" class="btn_my_zzk"></div>
+<div id="widget_my_google" class="div_my_zzk"><input type="text" name="google_q" id="google_q" onkeydown="return google_go_enter(event)" class="input_my_zzk">&nbsp;<input onclick="google_go()" type="button" value="谷歌搜索" class="btn_my_zzk"></div>
+</div>
+
+
+<h3 class="catListTitle">常用链接</h3>
+<ul>
+
+		<li><a id="ctl01_rptMainLinks_lnkLinkItem_0" href="http://www.cnblogs.com/hangxin1940/p/">我的随笔</a></li>
+	
+		<li><a id="ctl01_rptMainLinks_lnkLinkItem_1" href="http://www.cnblogs.com/hangxin1940/MyComments.html">我的评论</a></li>
+	
+		<li><a id="ctl01_rptMainLinks_lnkLinkItem_2" title="我发表过评论的随笔" href="http://www.cnblogs.com/hangxin1940/OtherPosts.html">我的参与</a></li>
+	
+		<li><a id="ctl01_rptMainLinks_lnkLinkItem_3" href="http://www.cnblogs.com/hangxin1940/RecentComments.html">最新评论</a></li>
+	
+		<li><a id="ctl01_rptMainLinks_lnkLinkItem_4" href="http://www.cnblogs.com/hangxin1940/tag/">我的标签</a></li>
+	
+</ul>
+<div id="itemListLin_con" style="display:none;">
+
+</div>
+<h3 class="catListTitle">我的标签</h3>
+<div id="MyTag">
+<ul>
+<li><a href="http://www.cnblogs.com/hangxin1940/tag/golang/">golang</a>(24)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/revel/">revel</a>(22)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/server/">server</a>(21)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a>(7)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/%E7%AE%97%E6%B3%95/">算法</a>(6)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/webqq%20android%20qq/">webqq android qq</a>(4)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/Go/">Go</a>(3)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/go%20web/">go web</a>(2)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/rpc/">rpc</a>(1)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/RT3290/">RT3290</a>(1)</li><li><a href="http://www.cnblogs.com/hangxin1940/tag/">更多</a></li>
+</ul>
+</div>
+		<h3>随笔分类<span style="font-size:11px;font-weight:normal">(197)</span></h3>
+		
+				<ul>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_0" href="http://www.cnblogs.com/hangxin1940/category/129967.html">(c#)数据结构与算法分析(7)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_1" href="http://www.cnblogs.com/hangxin1940/category/309099.html">Android(22)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_2" href="http://www.cnblogs.com/hangxin1940/category/333368.html">Arduino(9)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_3" href="http://www.cnblogs.com/hangxin1940/category/468401.html">GC DevKit(5)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_4" href="http://www.cnblogs.com/hangxin1940/category/466638.html">Geek(18)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_5" href="http://www.cnblogs.com/hangxin1940/category/504783.html">Go(27)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_6" href="http://www.cnblogs.com/hangxin1940/category/435758.html">Grails(10)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_7" href="http://www.cnblogs.com/hangxin1940/category/127078.html">Linux(16)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_8" href="http://www.cnblogs.com/hangxin1940/category/127079.html">Program(15)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_9" href="http://www.cnblogs.com/hangxin1940/category/355735.html">python(12)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_10" href="http://www.cnblogs.com/hangxin1940/category/466641.html">Raspberry PI(12)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_11" href="http://www.cnblogs.com/hangxin1940/category/293473.html">黑马程序员(25)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_12" href="http://www.cnblogs.com/hangxin1940/category/349235.html">抛砖引玉(4)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_0_Link_13" href="http://www.cnblogs.com/hangxin1940/category/127080.html">颓废日记(15)</a> </li>
+			
+				</ul>
+			
+	
+		<h3>随笔档案<span style="font-size:11px;font-weight:normal">(151)</span></h3>
+		
+				<ul>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_0" href="http://www.cnblogs.com/hangxin1940/archive/2014/01.html">2014年1月 (2)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_1" href="http://www.cnblogs.com/hangxin1940/archive/2013/12.html">2013年12月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_2" href="http://www.cnblogs.com/hangxin1940/archive/2013/11.html">2013年11月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_3" href="http://www.cnblogs.com/hangxin1940/archive/2013/10.html">2013年10月 (2)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_4" href="http://www.cnblogs.com/hangxin1940/archive/2013/09.html">2013年9月 (2)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_5" href="http://www.cnblogs.com/hangxin1940/archive/2013/08.html">2013年8月 (24)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_6" href="http://www.cnblogs.com/hangxin1940/archive/2013/05.html">2013年5月 (4)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_7" href="http://www.cnblogs.com/hangxin1940/archive/2013/04.html">2013年4月 (16)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_8" href="http://www.cnblogs.com/hangxin1940/archive/2013/03.html">2013年3月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_9" href="http://www.cnblogs.com/hangxin1940/archive/2013/02.html">2013年2月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_10" href="http://www.cnblogs.com/hangxin1940/archive/2013/01.html">2013年1月 (2)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_11" href="http://www.cnblogs.com/hangxin1940/archive/2012/12.html">2012年12月 (3)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_12" href="http://www.cnblogs.com/hangxin1940/archive/2012/07.html">2012年7月 (8)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_13" href="http://www.cnblogs.com/hangxin1940/archive/2012/04.html">2012年4月 (5)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_14" href="http://www.cnblogs.com/hangxin1940/archive/2012/03.html">2012年3月 (4)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_15" href="http://www.cnblogs.com/hangxin1940/archive/2012/02.html">2012年2月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_16" href="http://www.cnblogs.com/hangxin1940/archive/2012/01.html">2012年1月 (3)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_17" href="http://www.cnblogs.com/hangxin1940/archive/2011/12.html">2011年12月 (4)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_18" href="http://www.cnblogs.com/hangxin1940/archive/2011/11.html">2011年11月 (3)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_19" href="http://www.cnblogs.com/hangxin1940/archive/2011/10.html">2011年10月 (3)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_20" href="http://www.cnblogs.com/hangxin1940/archive/2011/09.html">2011年9月 (4)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_21" href="http://www.cnblogs.com/hangxin1940/archive/2011/08.html">2011年8月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_22" href="http://www.cnblogs.com/hangxin1940/archive/2011/07.html">2011年7月 (6)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_23" href="http://www.cnblogs.com/hangxin1940/archive/2011/06.html">2011年6月 (9)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_24" href="http://www.cnblogs.com/hangxin1940/archive/2011/05.html">2011年5月 (12)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_25" href="http://www.cnblogs.com/hangxin1940/archive/2011/04.html">2011年4月 (3)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_26" href="http://www.cnblogs.com/hangxin1940/archive/2011/03.html">2011年3月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_27" href="http://www.cnblogs.com/hangxin1940/archive/2009/05.html">2009年5月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_28" href="http://www.cnblogs.com/hangxin1940/archive/2008/12.html">2008年12月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_29" href="http://www.cnblogs.com/hangxin1940/archive/2008/07.html">2008年7月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_30" href="http://www.cnblogs.com/hangxin1940/archive/2008/05.html">2008年5月 (1)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_31" href="http://www.cnblogs.com/hangxin1940/archive/2008/04.html">2008年4月 (8)</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_1_Link_32" href="http://www.cnblogs.com/hangxin1940/archive/2008/03.html">2008年3月 (13)</a> </li>
+			
+				</ul>
+			
+	
+		<h3>文章档案<span style="font-size:11px;font-weight:normal">(1)</span></h3>
+		
+				<ul>
+			
+				<li><a id="ctl03_CatList_LinkList_2_Link_0" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/archives/2008/03.html">2008年3月 (1)</a> </li>
+			
+				</ul>
+			
+	
+		<h3>相册</h3>
+		
+				<ul>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_0" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/467679.html">arduino</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_1" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/128933.html">colock</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_2" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/533268.html">gnuradio</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_3" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/508415.html">golang</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_4" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/304131.html">imges</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_5" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/127026.html">Me</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_6" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/525357.html">OsmocomBB</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_7" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/466697.html">raspberrypi</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_8" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/128109.html">Ubuntu</a> </li>
+			
+				<li><a id="ctl03_CatList_LinkList_3_Link_9" rel="nofollow" href="http://www.cnblogs.com/hangxin1940/gallery/289822.html">军旅生涯</a> </li>
+			
+				</ul>
+			
+	
+		<h3>nasboq</h3>
+		
+				<ul>
+			
+				</ul>
+			
+	
+<h3>积分与排名</h3>
+<ul>
+	<li>
+		积分 -
+		105023
+	</li><li>
+		排名 -
+		1198
+	</li>
+</ul>
+
+<h3 class="catListTitle">最新评论</h3>
+<div class="RecentComment" id="RecentComments">
+	<div id="RecentCommentsBlock"><ul>
+    <li class="recent_comment_title"><a href="http://www.cnblogs.com/hangxin1940/p/3334123.html#2876180">1. Re:ubuntu下使用golang、qml与ubuntu sdk开发桌面应用 (简单示例)</a></li>
+    <li class="recent_comment_body">谢谢，有很大的帮助。但是在go run时显示：./main.go:35: syntax error: unexpected semicolon or newline, expecting )第35行是： context.SetVar("goObject", &amp;amp;goObject)源码完全复制过一遍也不行是不是QML更新了？Go版本是1.2QML是2月10日更新的</li>
+    <li class="recent_comment_author">--Bluek404</li>
+    <li class="recent_comment_title"><a href="http://www.cnblogs.com/hangxin1940/archive/2011/12/14/2288169.html#2874391">2. Re:android 程序开发的插件化 模块化方法 之一</a></li>
+    <li class="recent_comment_body">发现一旦代码做了混淆之后就不能用了。。。。惆怅。。</li>
+    <li class="recent_comment_author">--songsyl1207</li>
+    <li class="recent_comment_title"><a href="http://www.cnblogs.com/hangxin1940/archive/2012/01/13/2321507.html#2873000">3. Re:Android OCR 之 tesseract</a></li>
+    <li class="recent_comment_body">@<br>你这个是因为版本不一样，估计你训练所用的tesseract是3.02的，而楼主编译好的是3.01的，版本不一样，就无法init成功，个人意见。</li>
+    <li class="recent_comment_author">--genameryu</li>
+    <li class="recent_comment_title"><a href="http://www.cnblogs.com/hangxin1940/archive/2012/01/13/2321507.html#2872999">4. Re:Android OCR 之 tesseract</a></li>
+    <li class="recent_comment_body">楼主，请问下你是怎么编译那个tess-two的，我怎么试了这么多次都不成功，并没有和你放出的那个文件夹一样，如果方便的话，能教一下具体的如何编译tess-two的步骤吗</li>
+    <li class="recent_comment_author">--genameryu</li>
+    <li class="recent_comment_title"><a href="http://www.cnblogs.com/hangxin1940/archive/2012/01/13/2321507.html#2863457">5. Re:Android OCR 之 tesseract</a></li>
+    <li class="recent_comment_body">楼主你好,对于这个TessBaseAPI 的init 方法，需要传入训练的语言，我自己训练了0-9 的数字，生成 自定义的num.traineddata 为什么在init 方法中不能识别呢？楼主有什么建议吗？一定要回复我啊！谢谢</li>
+    <li class="recent_comment_author">--ChowKei</li>
+</ul>
+</div>
+</div>
+
+<h3 class="catListTitle">阅读排行榜</h3>
+<div class="RecentComment" id="TopViewPosts"> 
+	<div id="TopViewPostsBlock"><ul><li><a href="http://www.cnblogs.com/hangxin1940/archive/2008/03/18/1110704.html">1. 灵宝方言(超搞笑)(19738)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2011/10/14/2206754.html">2. Android 创世纪 第二天(19083)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2011/12/14/2288169.html">3. android 程序开发的插件化 模块化方法 之一(17528)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2012/01/13/2321507.html">4. Android OCR 之 tesseract(12395)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2011/07/10/2101552.html">5. ubuntu下调试android手机，并进入手机shell终端(7708)</a></li></ul></div>
+</div>
+
+<h3 class="catListTitle">评论排行榜</h3>
+<div class="RecentComment" id="TopCommentsPosts">
+	<div id="TopFeedbackPostsBlock"><ul><li><a href="http://www.cnblogs.com/hangxin1940/archive/2008/03/18/1110704.html">1. 灵宝方言(超搞笑)(99)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2012/01/13/2321507.html">2. Android OCR 之 tesseract(42)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2011/12/14/2288169.html">3. android 程序开发的插件化 模块化方法 之一(21)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/p/3231649.html">4. Go学习笔记 - 关于Java、Python、Go编程思想的不同(18)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2012/02/12/2348306.html">5. AtomQQ 随笔(16)</a></li></ul></div>
+</div>
+<h3 class="catListTitle">推荐排行榜</h3>
+<div class="RecentComment">
+	<div id="TopDiggPostsBlock"><ul><li><a href="http://www.cnblogs.com/hangxin1940/archive/2011/10/14/2206754.html">1. Android 创世纪 第二天(8)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2011/12/14/2288169.html">2. android 程序开发的插件化 模块化方法 之一(7)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2011/10/01/2196964.html">3. Android 创世纪 第一天(5)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/archive/2012/01/13/2321507.html">4. Android OCR 之 tesseract(4)</a></li><li><a href="http://www.cnblogs.com/hangxin1940/p/3334123.html">5. ubuntu下使用golang、qml与ubuntu sdk开发桌面应用 (简单示例)(4)</a></li></ul></div>
+</div></div><script type="text/javascript">loadBlogSideColumn();</script>
+    
+</div>
+</div>
+<div class="clear"></div>
+
+<div id="footer">
+	Powered by: 
+	<a id="Footer1_Hyperlink3" name="Hyperlink1" href="http://www.cnblogs.com/" style="font-family:Verdana;font-size:12px;">博客园</a>	Copyright © 黑暗伯爵
+</div>
+
+<!--PageEndHtml Block Begin-->
+<script type="text/javascript" src="./raspberrypi 与 arduino 使用 nRF24L01+ 通信 -- raspberry pi为发送端 - 黑暗伯爵 - 博客园_files/markdown.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+var converter = new Markdown.Converter();
+$(".postCon,#cnblogs_post_body").each(function(){$(this).html(converter.makeHtml($(this).html()));});
+});
+
+
+
+</script>
+<!--PageEndHtml Block End-->
+
+
+<iframe id="google_osd_static_frame_3685258063487" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;"></iframe></body></html>

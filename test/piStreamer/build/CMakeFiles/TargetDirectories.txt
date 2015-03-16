@@ -1,0 +1,2 @@
+/home/pi/206/workspace/test/piStreamer/build/CMakeFiles/ip_cam.dir
+/home/pi/206/workspace/test/piStreamer/build/CMakeFiles/ipcam.dir

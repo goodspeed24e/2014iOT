@@ -1,0 +1,2 @@
+/usr/bin/ar cr libopenp2p-event.a  CMakeFiles/openp2p-event.dir/Generator.cpp.o CMakeFiles/openp2p-event.dir/Source.cpp.o CMakeFiles/openp2p-event.dir/Wait.cpp.o
+/usr/bin/ranlib libopenp2p-event.a

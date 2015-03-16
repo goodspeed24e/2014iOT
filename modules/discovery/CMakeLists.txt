@@ -1,0 +1,3 @@
+SET(DISCOVERY_SRC_LIST discovery.cpp)
+
+ADD_LIBRARY(discovery SHARED ${DISCOVERY_SRC_LIST})

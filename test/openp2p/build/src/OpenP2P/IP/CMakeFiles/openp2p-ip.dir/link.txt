@@ -1,0 +1,2 @@
+/usr/bin/ar cr libopenp2p-ip.a  CMakeFiles/openp2p-ip.dir/Address.cpp.o CMakeFiles/openp2p-ip.dir/V4Address.cpp.o CMakeFiles/openp2p-ip.dir/V6Address.cpp.o
+/usr/bin/ranlib libopenp2p-ip.a

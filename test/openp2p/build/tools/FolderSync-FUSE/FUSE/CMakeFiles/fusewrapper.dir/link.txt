@@ -1,0 +1,2 @@
+/usr/bin/ar cr libfusewrapper.a  CMakeFiles/fusewrapper.dir/FileSystem.cpp.o CMakeFiles/fusewrapper.dir/Path.cpp.o
+/usr/bin/ranlib libfusewrapper.a

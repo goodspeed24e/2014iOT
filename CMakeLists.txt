@@ -1,0 +1,17 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+PROJECT(MATRIVIDEO)
+
+# DEBUG, RELEASE, MINSIZEREL, RELWITHDEBINFO
+# We can use -DCMAKE_BUILD_TYPE=Debug or -DCMAKE_BUILD_TYPE=RelWithDebInfo to define something
+#IF(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+#	ADD_DEFINITIONS("-DDEBUG")
+#ENDIF()
+
+#SET(CMAKE_C_FLAGS "-O3 -Wall -Wextra -pedantic -Werror")
+#SET(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra -pedantic -Werror")
+#SET(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra -pedantic")
+SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra -pedantic")
+
+ADD_SUBDIRECTORY(libs)
+
+ADD_SUBDIRECTORY(modules)

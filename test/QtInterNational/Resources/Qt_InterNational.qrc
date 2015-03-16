@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="/qml">
+    <file alias="MainPage.qml">qml/MainPage.qml</file>
+    <file alias="Button.qml">qml/Button.qml</file>
+    <file alias="QCombo_Quality.qml">qml/QCombo_Quality.qml</file>
+  </qresource>
+  <qresource prefix="/languages">
+    <file alias="lang_zh_TW.qm">qml/languages/lang_zh_TW.qm</file>
+    <file alias="lang_zh_CN.qm">qml/languages/lang_zh_CN.qm</file>
+  </qresource>
+</RCC>

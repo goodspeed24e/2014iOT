@@ -1,0 +1,2 @@
+/usr/bin/ar cr libopenp2p.a  CMakeFiles/openp2p.dir/IOService.cpp.o CMakeFiles/openp2p.dir/Signal.cpp.o CMakeFiles/openp2p.dir/String.cpp.o CMakeFiles/openp2p.dir/Thread.cpp.o CMakeFiles/openp2p.dir/Timer.cpp.o
+/usr/bin/ranlib libopenp2p.a
